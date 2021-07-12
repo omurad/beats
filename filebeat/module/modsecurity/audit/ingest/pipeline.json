@@ -14,6 +14,20 @@
       }
     },
     {
+      "foreach": {
+        "field": "audit_data.messages",
+        "processor": {
+          "grok": {
+            "field": "_injest._value",
+            "patterns": [
+              ""
+            ]
+          }
+        }
+
+      }
+    },
+    {
       "user_agent": {
         "field": "modsecurity.audit.transaction.request.headers.User-Agent"
       }
