@@ -1,0 +1,3 @@
+dashboards:
+- id: Filebeat-modsecurity-audit-Dashboard
+  file: Filebeat-modsecurity-audit.json
