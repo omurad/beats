@@ -1,0 +1,23 @@
+- name: request
+  description: Please add description
+  example: Please add example
+  type: group
+  fields:
+  - name: method
+    description: Please add description
+    example: Please add example
+    type: keyword
+- name: path
+  description: Please add description
+  example: Please add example
+- name: version
+  description: Please add description
+  example: Please add example
+  type: long
+- name: address
+  description: Please add description
+  example: Please add example
+  type: keyword
+- name: port
+  description: Please add description
+  example: Please add example

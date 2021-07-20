@@ -8,44 +8,124 @@
       }
     },
     {
-      "json": {
-        "field": "transaction",
-        "add_to_root": true
-      }
-    },
-    {
-      "foreach": {
-        "field": "audit_data.messages",
-        "processor": {
-          "grok": {
-            "field": "_injest._value",
-            "patterns": [
-              ""
-            ]
-          }
-        }
-
-      }
-    },
-    {
-      "user_agent": {
-        "field": "modsecurity.audit.transaction.request.headers.User-Agent"
-      }
-    },
-    {
-      "date": {
-        "field": "modsecurity.audit.transaction.time",
-        "target_field": "@timestamp",
-        "formats": [
-          "dd/LLL/yyyy:HH:mm:ss -ZZZZZ"
-        ]
-      }
-    },
-    {
-      "geoip": {
-        "field": "modsecurity.audit.transaction.remote_address"
-      }
+    "date": {
+      "field": "transaction.time",
+      "formats": [
+        "dd/MMM/yyyy:HH:mm:ss -Z"
+      ],
+      "target_field": "@timestamp"
     }
+  },
+  {
+    "set": {
+      "field": "modsec.transaction_id",
+      "value": "{{{transaction.transaction_id}}}"
+    }
+  },
+  {
+    "set": {
+      "field": "source.ip",
+      "value": "{{{transaction.remote_address}}}"
+    }
+  },
+  {
+    "set": {
+      "field": "source.port",
+      "value": "{{{transaction.remote_port}}}"
+    }
+  },
+  {
+    "set": {
+      "field": "destination.nat.ip",
+      "value": "{{{transaction.local_address}}}"
+    }
+  },
+  {
+    "set": {
+      "field": "destination.nat.port",
+      "value": "{{{transaction.local_port}}}"
+    }
+  },
+  {
+    "remove": {
+      "field": "transaction"
+    }
+  },
+  {
+    "grok": {
+      "field": "request.request_line",
+      "patterns": [
+        "^%{WORD:http.request.method}%{SPACE}%{NOTSPACE:url.path} HTTP/%{NUMBER:http.version}$"
+      ]
+    }
+  },
+  {
+    "user_agent": {
+      "field": "request.headers.User-Agent",
+      "ignore_missing": true
+    }
+  },
+  {
+    "grok": {
+      "field": "request.headers.Host",
+      "patterns": [
+        "^%{IPORHOST:destination.address}$",
+        "^%{IPORHOST:destination.address}:%{INT:destination.port}$"
+      ],
+      "ignore_missing": true
+    }
+  },
+  {
+    "join": {
+      "field": "request.body",
+      "separator": "---",
+      "target_field": "http.request.body",
+      "if": "ctx.request.containsKey('body')"
+    }
+  },
+  {
+    "remove": {
+      "field": "request"
+    }
+  },
+  {
+    "set": {
+      "field": "http.response.status_code",
+      "value": "{{{response.status}}}"
+    }
+  },
+  {
+    "remove": {
+      "field": "response"
+    }
+  },
+  {
+    "remove": {
+      "field": "audit_data.error_messages",
+      "ignore_missing": true
+    }
+  },
+  {
+    "set": {
+      "field": "modsecurity.intercepted",
+      "value": "{{{audit_data.action.intercepted}}}",
+      "ignore_empty_value": true
+    }
+  },
+  {
+    "remove": {
+      "field": [
+        "audit_data.action",
+        "audit_data.handler",
+        "audit_data.stopwatch",
+        "audit_data.reponse_body_dechunked",
+        "audit_data.producer",
+        "audit_data.server",
+        "audit_data.engine_mode"
+      ],
+      "ignore_missing": true
+    }
+  }
   ],
   "on_failure": [
     {
